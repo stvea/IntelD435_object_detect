@@ -58,16 +58,22 @@ while True:
     points = pc.calculate(depth_frame)
     vtx = np.asanyarray(points.get_vertices())
     tex = np.asanyarray(points.get_texture_coordinates())
-    coordinates = np.ndarray(buffer=points.get_vertices(), dtype=np.float32, shape=(img_size[1], img_size[0], img_size[2]))
-    point = Point(coordinates[detect_pixel[0]][detect_pixel[1]])
-    print(point)
+    coordinates = np.asanyarray(vtx).view(np.float32).reshape(-1, 3)  # xyz
+    # coordinates = np.ndarray(buffer=points.get_vertices(), dtype=np.float32, shape=(img_size[1], img_size[0], img_size[2]))
+    point = Point(coordinates[detect_pixel[1]][detect_pixel[0]])
+    print(coordinates.shape)
+
+    p = rs.rs2_deproject_pixel_to_point(depth_intrin, [detect_pixel[0], detect_pixel[1]], 2)
+    print(p)
 
     cv2.circle(img_color, (detect_pixel[0], detect_pixel[1]), 8, [255, 0, 255], thickness=-1)
-    # cv2.circle(img_color, (depth_pixel[1], depth_pixel[0]), 8, [255, 0, 255], thickness=-1)
-    # cv2.putText(img_color, "Dis:" + str(img_depth[200, 200]), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, [255, 0, 255])
+    cv2.circle(coordinates, (detect_pixel[0], detect_pixel[1]), 8, [ 0], thickness=-1)
+    # # cv2.circle(img_color, (depth_pixel[1], depth_pixel[0]), 8, [255, 0, 255], thickness=-1)
+    # # cv2.putText(img_color, "Dis:" + str(img_depth[200, 200]), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, [255, 0, 255])
     cv2.putText(img_color, str(point), (0, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, [255, 0, 255])
 
-    cv2.imshow('depth_frame', img_color)
+    cv2.imshow('depth_frame', coordinates[:,:,2:3])
+    cv2.imshow('image frame', img_color)
     key = cv2.waitKey(1)
     if key & 0xFF == ord('q'):
         break
